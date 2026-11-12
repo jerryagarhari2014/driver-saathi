@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Driver Saathi - Har Ride, Tumhare Route Ki Taraf | Delhi Drivers</title>
+<meta name="description" content="Driver Saathi helps bike taxi and delivery drivers in Delhi pick rides that go towards their destination. Route match, smart alerts and a simple earnings tracker.">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#070b12;--card:#101827;--text:#f2f6fb;--muted:#a8b8c9;--yellow:#ffc400;--green:#00c853;--blue:#00a3ff;--line:#1e2c3f}
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+header{position:sticky;top:0;background:rgba(7,11,18,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:20}
+nav{display:flex;justify-content:space-between;align-items:center;height:66px}
+.logo{font-weight:900;font-size:21px}.logo span{color:var(--yellow)}
+.navlinks{display:flex;gap:24px;color:var(--muted);font-size:15px}
+.navlinks a:hover{color:var(--text)}
+.btn{display:inline-block;background:var(--yellow);color:#141000;font-weight:800;padding:13px 24px;border-radius:12px;border:0;cursor:pointer;font-size:15px}
+.btn:hover{transform:translateY(-1px)}
+.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+.hero{display:grid;grid-template-columns:1.05fr .95fr;gap:36px;align-items:center;padding:64px 0 48px}
+.pill{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--card);padding:8px 14px;border-radius:999px;font-size:13px;color:var(--muted)}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--green);animation:pulse 1.6s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(0,200,83,.6)}70%{box-shadow:0 0 0 9px rgba(0,200,83,0)}100%{box-shadow:0 0 0 0 rgba(0,200,83,0)}}
+.hero h1{font-size:clamp(38px,5.5vw,60px);line-height:1.04;letter-spacing:-1.4px;margin:20px 0 16px}
+.hero h1 em{font-style:normal;color:var(--yellow)}
+.hero p{color:var(--muted);font-size:18px;max-width:560px}
+.hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:26px}
+.hero-img{position:relative;border-radius:22px;overflow:hidden;border:1px solid var(--line);animation:floaty 6s ease-in-out infinite}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+.hero-img img{width:100%;height:100%;object-fit:cover;display:block;aspect-ratio:4/3.4}
+.ride-card{position:absolute;left:16px;right:16px;bottom:16px;background:rgba(7,11,18,.92);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:16px;padding:16px}
+.ride-card .top{display:flex;justify-content:space-between;align-items:center}
+.match{font-size:30px;font-weight:900;color:var(--green)}
+.match small{font-size:13px;color:var(--muted);font-weight:600}
+.route{height:6px;background:#1e2c3f;border-radius:99px;margin:12px 0 8px;overflow:hidden}
+.route i{display:block;height:100%;width:78%;background:linear-gradient(90deg,var(--green),var(--yellow));border-radius:99px;animation:fill 2.2s ease forwards}
+@keyframes fill{from{width:8%}to{width:78%}}
+.ride-card p{color:var(--muted);font-size:14px}
+.marquee{border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden;padding:14px 0;white-space:nowrap}
+.marquee span{display:inline-block;padding-right:48px;font-weight:800;letter-spacing:1px;color:var(--muted);animation:slide 22s linear infinite}
+@keyframes slide{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+section{padding:68px 0}
+h2{font-size:33px;letter-spacing:-.6px}
+.sub{color:var(--muted);max-width:640px;margin:10px 0 30px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:26px;transition:.25s}
+.card:hover{transform:translateY(-5px);border-color:#31465f}
+.card h3{font-size:19px;margin:14px 0 8px}.card p{color:var(--muted);font-size:15px}
+.icon{font-size:26px}
+.reveal{opacity:0;transform:translateY(22px);transition:.7s}
+.reveal.on{opacity:1;transform:none}
+.demo{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:center}
+.demo img{width:100%;border-radius:20px;border:1px solid var(--line);display:block}
+.phone{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px}
+.phone h3{font-size:20px;margin-bottom:6px}
+.phone .meta{color:var(--muted);font-size:14px;margin-bottom:16px}
+.big{font-size:44px;font-weight:900;color:var(--green)}
+.big small{font-size:14px;color:var(--muted);font-weight:600}
+.row{display:flex;gap:10px;margin-top:18px}
+.row button{flex:1;padding:14px;border-radius:12px;border:0;font-weight:800;cursor:pointer;font-size:15px}
+.accept{background:var(--green);color:#04140a}.reject{background:#1a2635;color:var(--text);border:1px solid var(--line)!important}
+.calc{background:linear-gradient(135deg,#132a1a,#0b2536);border:1px solid var(--line);border-radius:22px;padding:34px}
+.calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:center}
+label{display:block;color:var(--muted);font-size:14px;margin:14px 0 6px}
+input[type=range]{width:100%;accent-color:var(--yellow)}
+.out{font-size:38px;font-weight:900;color:var(--yellow)}
+.out small{font-size:14px;color:var(--muted);font-weight:600}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.step{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:26px}
+.step b{color:var(--yellow);letter-spacing:1px;font-size:13px}
+.step h3{margin:10px 0 8px}.step p{color:var(--muted);font-size:15px}
+.cta{text-align:center;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:48px 28px}
+.cta h2{font-size:34px}.cta p{color:var(--muted);margin:12px auto 24px;max-width:540px}
+footer{border-top:1px solid var(--line);padding:28px 0;color:var(--muted);font-size:14px}
+@media(max-width:820px){.hero,.demo,.calc-grid{grid-template-columns:1fr}.grid,.steps{grid-template-columns:1fr}.navlinks{display:none}.hero{padding-top:40px}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><nav>
+<a class="logo" href="#">Driver<span>Saathi</span></a>
+<div class="navlinks"><a href="#features">Features</a><a href="#demo">Live demo</a><a href="#calculator">Kamayi</a><a href="#join">Join</a></div>
+<a class="btn" href="#join">Driver join karo</a>
+</nav></div></header>
+
+<main class="wrap">
+<section class="hero">
+<div>
+<span class="pill"><span class="dot"></span> Live - Delhi drivers ke liye</span>
+<h1>Har ride, <em>tumhare route ki taraf.</em></h1>
+<p>Destination set karo, duty on karo. Driver Saathi har ride ko padhta hai aur batata hai kaunsi ride tumhare raste par hai, kitne percent match hai aur kitne minute me pohochoge. Khali wapsi, kam.</p>
+<div class="hero-actions">
+<a class="btn" href="#demo">Ride demo dekho</a>
+<a class="btn ghost" href="#calculator">Apni kamayi nikalo</a>
+</div>
+<p style="margin-top:18px;font-size:14px;color:var(--muted)">Rapido - Uber - Ola - Porter - Bharat Taxi drivers ke liye</p>
+</div>
+<div class="hero-img">
+<img src="images/hero.webp" alt="Delhi bike taxi driver holding a phone with a route map at golden hour">
+<div class="ride-card">
+<div class="top"><div><b>Rapido - Rohini to Noida</b><br><span style="color:var(--muted);font-size:13px">Pickup 3 min door - Ride 19 min</span></div><div class="match">78%<br><small>route match</small></div></div>
+<div class="route"><i></i></div>
+<p>Example ride - Total 22 min - Tumhare destination ki taraf ja rahi hai</p>
+</div>
+</div>
+</section>
+</main>
+
+<div class="marquee"><span>RAPIDO &nbsp;•&nbsp; UBER &nbsp;•&nbsp; OLA &nbsp;•&nbsp; PORTER &nbsp;•&nbsp; BHARAT TAXI &nbsp;•&nbsp; ROUTE MATCH &nbsp;•&nbsp; SMART ALERTS &nbsp;•&nbsp; RAPIDO &nbsp;•&nbsp; UBER &nbsp;•&nbsp; OLA &nbsp;•&nbsp; PORTER &nbsp;•&nbsp; BHARAT TAXI &nbsp;•&nbsp; ROUTE MATCH &nbsp;•&nbsp; SMART ALERTS &nbsp;•&nbsp;</span></div>
+
+<main class="wrap">
+<section id="features">
+<h2 class="reveal">Driver ke liye, driver ki bhasha me</h2>
+<p class="sub reveal">Koi lamba dashboard nahi, koi confusing setting nahi. Bas wahi cheez jo duty par kaam aaye.</p>
+<div class="grid">
+<div class="card reveal"><div class="icon">📍</div><h3>Route match, ek nazar me</h3><p>Har ride par percent dikhta hai. 78% match matlab ride tumhare raste par hai, khali lautna nahi padega.</p></div>
+<div class="card reveal"><div class="icon">🔔</div><h3>Chhota popup, bada faisla</h3><p>Ride aate hi chhota sa popup: app, pickup, drop, match aur total minute. Accept ya reject, ek tap me.</p></div>
+<div class="card reveal"><div class="icon">🎙️</div><h3>Voice me bhi suno</h3><p>Phone dekhna mushkil ho to popup ko bol kar suno. Hindi aur English, dono me.</p></div>
+<div class="card reveal"><div class="icon">💰</div><h3>Kamayi, saaf saaf</h3><p>Din ki trips aur fare dalo, hafte ki estimate nikalo. Apna hisab khud rakho.</p></div>
+<div class="card reveal"><div class="icon">🗺️</div><h3>Offline bhi kaam kare</h3><p>Route aur destination phone me save rahte hain. Network slow ho to bhi popup rukta nahi.</p></div>
+<div class="card reveal"><div class="icon">🛡️</div><h3>Tumhara data, tumhare phone me</h3><p>Ride history aur destination sirf tumhare phone par. Kahi upload nahi hota.</p></div>
+</div>
+</section>
+
+<section id="demo">
+<div class="demo">
+<div><img src="images/night.webp" alt="Driver checking a route map on his phone at night in Delhi"></div>
+<div class="phone reveal">
+<span class="pill"><span class="dot"></span> Live demo - sample ride</span>
+<h3 style="margin-top:14px">Rapido - Karol Bagh to Gurugram</h3>
+<p class="meta">Pickup 4 min door - Drop tumhare destination ki taraf</p>
+<div class="big"><span id="matchNum">78</span>% <small>route match</small></div>
+<div class="route"><i id="matchBar" style="width:78%"></i></div>
+<p style="color:var(--muted)">Pickup 4 min + Ride 26 min = <b style="color:var(--text)">Total 30 min</b></p>
+<div class="row">
+<button class="accept" onclick="nextRide(true)">Accept karo</button>
+<button class="reject" onclick="nextRide(false)">Reject</button>
+</div>
+<p id="demoMsg" style="margin-top:14px;color:var(--muted);font-size:14px">Nayi ride ka wait karo, ya Accept dabakar agli sample ride dekho.</p>
+</div>
+</div>
+</section>
+
+<section id="calculator">
+<div class="calc reveal">
+<div class="calc-grid">
+<div>
+<h2>Apni kamayi nikalo</h2>
+<p class="sub">Slider ghumao, apna din dalo. Ye sirf tumhare numbers se estimate hai, koi promise nahi.</p>
+<label>Din me kitni trips? <b id="tripsVal" style="color:var(--text)">20 trips</b></label>
+<input type="range" id="trips" min="5" max="40" value="20">
+<label>Ek trip ka average fare? <b id="fareVal" style="color:var(--text)">Rs 80</b></label>
+<input type="range" id="fare" min="40" max="200" value="80" step="5">
+<label>Hafte me kitne din duty? <b id="daysVal" style="color:var(--text)">6 din</b></label>
+<input type="range" id="days" min="1" max="7" value="6">
+</div>
+<div>
+<div class="out"><span id="weekOut">Rs 9,600</span><br><small>estimate, ek hafte ki kamayi (fare se, kharch se pehle)</small></div>
+<p style="color:var(--muted);margin-top:14px">Din ki estimate: <b id="dayOut" style="color:var(--text)">Rs 1,600</b></p>
+<p style="color:var(--muted);font-size:14px;margin-top:8px">Petrol, commission aur kharch isme se alag se niklega. Apna asli hisab hamesha app aur apni diary se milao.</p>
+</div>
+</div>
+</div>
+</section>
+
+<section>
+<div class="demo">
+<div class="reveal">
+<h2>Subah ki pehli ride se, raat ki last ride tak</h2>
+<p class="sub">Suraj nikalte hi duty shuru hoti hai. Sahi ride chunna hi din bhar ki kamayi tay karta hai.</p>
+<div class="steps" style="grid-template-columns:1fr">
+<div class="step"><b>01</b><h3>Destination set karo</h3><p>Ghar jana hai ya ek taraf ki duty? Destination ek baar set karo, din bhar wahi chalega.</p></div>
+<div class="step"><b>02</b><h3>Ride aate hi popup dekho</h3><p>Match, minute aur pickup. Sochne ka time nahi, dekhte hi faisla.</p></div>
+<div class="step"><b>03</b><h3>Sahi ride lo, khali mat lauto</h3><p>Route wali ride lo, baaki ko jaane do. Din ke end me fark dikhega.</p></div>
+</div>
+</div>
+<div><img src="images/sunrise.webp" alt="Bike taxi driver riding on a Delhi road at sunrise"></div>
+</div>
+</section>
+
+<section id="join">
+<div class="cta reveal">
+<h2>Driver ho? Join karo.</h2>
+<p>Apna naam aur sheher bhejo. Jaise hi driver version ready hoga, tumko pehle batayenge. Koi payment nahi, koi form nahi.</p>
+<a class="btn" href="mailto:jerryagarhari2014@gmail.com?subject=Driver Saathi - Join karna hai&body=Naam:%0ASheher:%0ADriver app: Rapido / Uber / Ola / Porter">Email se join karo</a>
+<p style="margin-top:16px;font-size:14px">Email: jerryagarhari2014@gmail.com - Delhi, India</p>
+</div>
+</section>
+</main>
+
+<footer><div class="wrap"><span>Driver Saathi - Drivers ke liye, drivers ke saath.</span><span>Delhi, India</span></div></footer>
+
+<script>
+var rides=[
+{app:"Rapido",from:"Karol Bagh",to:"Gurugram",match:78,pickup:4,ride:26},
+{app:"Uber",from:"Rohini Sec 22",to:"Noida Sec 62",match:84,pickup:3,ride:19},
+{app:"Porter",from:"Dwarka",to:"Saket",match:62,pickup:6,ride:24},
+{app:"Rapido",from:"Connaught Place",to:"Ghaziabad",match:91,pickup:2,ride:28}
+];
+var ri=0;
+function nextRide(accepted){
+ri=(ri+1)%rides.length;
+var r=rides[ri];
+document.querySelector(".phone h3").textContent=r.app+" - "+r.from+" to "+r.to;
+document.querySelector(".phone .meta").textContent="Pickup "+r.pickup+" min door - Drop tumhare destination ki taraf";
+document.getElementById("matchNum").textContent=r.match;
+document.getElementById("matchBar").style.width=r.match+"%";
+document.querySelector(".phone p:nth-of-type(2)") ;
+document.getElementById("demoMsg").textContent=accepted?"Pehli ride accept ho gayi. Agli sample ride ye hai.":"Pehli ride reject ho gayi. Agli sample ride ye hai.";
+}
+function calc(){
+var t=+document.getElementById("trips").value;
+var f=+document.getElementById("fare").value;
+var d=+document.getElementById("days").value;
+document.getElementById("tripsVal").textContent=t+" trips";
+document.getElementById("fareVal").textContent="Rs "+f;
+document.getElementById("daysVal").textContent=d+" din";
+document.getElementById("dayOut").textContent="Rs "+(t*f).toLocaleString("en-IN");
+document.getElementById("weekOut").textContent="Rs "+(t*f*d).toLocaleString("en-IN");
+}
+["trips","fare","days"].forEach(function(id){document.getElementById(id).addEventListener("input",calc);});
+calc();
+var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add("on");io.unobserve(e.target);}});},{threshold:.15});
+document.querySelectorAll(".reveal").forEach(function(el){io.observe(el);});
+</script>
+</body>
+</html>
