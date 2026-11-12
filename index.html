@@ -74,14 +74,28 @@ input[type=range]{width:100%;accent-color:var(--yellow)}
 .cta{text-align:center;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:48px 28px}
 .cta h2{font-size:34px}.cta p{color:var(--muted);margin:12px auto 24px;max-width:540px}
 footer{border-top:1px solid var(--line);padding:28px 0;color:var(--muted);font-size:14px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;place-items:center;z-index:50;padding:20px}
+.modal.open{display:grid}
+.modal-box{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:28px;max-width:420px;width:100%}
+.modal-box h3{font-size:22px;margin-bottom:6px}
+.modal-box p{color:var(--muted);font-size:14px;margin-bottom:16px}
+.modal-box label{display:block;color:var(--muted);font-size:14px;margin:12px 0 6px}
+.modal-box input,.modal-box select{width:100%;background:#0b1220;border:1px solid var(--line);color:var(--text);border-radius:10px;padding:12px 13px;font:inherit}
+.hist{list-style:none;display:grid;gap:10px}
+.hist li{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.hist b{color:var(--text)}.hist span{color:var(--muted);font-size:14px}
+.tag{font-size:12px;font-weight:800;padding:4px 10px;border-radius:99px}
+.tag.ok{background:#0f2a1d;color:var(--green)}.tag.no{background:#2a1414;color:#ff8a80}
+.chip-user{display:none;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:99px;padding:7px 13px;font-size:14px;font-weight:700}
 @media(max-width:820px){.hero,.demo,.calc-grid{grid-template-columns:1fr}.grid,.steps{grid-template-columns:1fr}.navlinks{display:none}.hero{padding-top:40px}}
 </style>
 </head>
 <body>
 <header><div class="wrap"><nav>
 <a class="logo" href="#">Driver<span>Saathi</span></a>
-<div class="navlinks"><a href="#features">Features</a><a href="#demo">Live demo</a><a href="#calculator">Kamayi</a><a href="#join">Join</a></div>
-<a class="btn" href="#join">Driver join karo</a>
+<div class="navlinks"><a href="#features">Features</a><a href="#demo">Live demo</a><a href="#history">Meri History</a><a href="#calculator">Kamayi</a></div>
+<span class="chip-user" id="userChip"></span>
+<button class="btn" id="loginBtn" type="button" onclick="openLogin()">Login karo</button>
 </nav></div></header>
 
 <main class="wrap">
@@ -142,6 +156,20 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--muted);font-s
 </div>
 </section>
 
+<section id="history">
+<h2 class="reveal">Meri History</h2>
+<p class="sub reveal">Login karne ke baad tumhari accepted aur rejected rides yahan save rehti hain, aur calculator ki kamayi bhi. Abhi history isi phone ya browser me save hoti hai. Google login on hote hi ye har phone par dikhegi.</p>
+<div id="historyBox" class="reveal">
+<p id="historyEmpty" style="color:var(--muted)">Abhi login nahi hua hai. Login karo, phir demo me koi ride Accept ya Reject karo, wo yahan save ho jayegi.</p>
+<ul class="hist" id="historyList"></ul>
+<div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
+<button class="btn ghost" type="button" onclick="saveCalc()">Kamayi save karo</button>
+<button class="btn ghost" type="button" onclick="clearHistory()">History saaf karo</button>
+<button class="btn ghost" type="button" id="logoutBtn" style="display:none" onclick="logout()">Logout</button>
+</div>
+</div>
+</section>
+
 <section id="calculator">
 <div class="calc reveal">
 <div class="calc-grid">
@@ -189,6 +217,25 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--muted);font-s
 </section>
 </main>
 
+<div class="modal" id="loginModal">
+<div class="modal-box">
+<h3>Driver Login</h3>
+<p>Apna naam aur driver app dalo. Ye profile isi device me save hoti hai, aur tumhari ride history isi profile se judti hai.</p>
+<label>Naam</label>
+<input id="loginName" type="text" placeholder="Jaise: Arun Kumar">
+<label>Mobile number</label>
+<input id="loginPhone" type="tel" placeholder="10 digit mobile number">
+<label>Driver app</label>
+<select id="loginApp"><option>Rapido</option><option>Uber</option><option>Ola</option><option>Porter</option><option>Bharat Taxi</option></select>
+<label>Sheher</label>
+<input id="loginCity" type="text" value="Delhi">
+<div style="display:flex;gap:10px;margin-top:20px">
+<button class="btn" type="button" onclick="doLogin()" style="flex:1">Login karo</button>
+<button class="btn ghost" type="button" onclick="closeLogin()">Band karo</button>
+</div>
+</div>
+</div>
+
 <footer><div class="wrap"><span>Driver Saathi - Drivers ke liye, drivers ke saath.</span><span>Delhi, India</span></div></footer>
 
 <script>
@@ -199,15 +246,65 @@ var rides=[
 {app:"Rapido",from:"Connaught Place",to:"Ghaziabad",match:91,pickup:2,ride:28}
 ];
 var ri=0;
+function getUser(){try{return JSON.parse(localStorage.getItem("ds_user")||"null")}catch(e){return null}}
+function getHist(){try{return JSON.parse(localStorage.getItem("ds_history")||"[]")}catch(e){return []}}
+function saveHist(h){localStorage.setItem("ds_history",JSON.stringify(h))}
+function renderUser(){
+var u=getUser();
+var chip=document.getElementById("userChip");
+var btn=document.getElementById("loginBtn");
+var lo=document.getElementById("logoutBtn");
+if(u){chip.style.display="inline-flex";chip.textContent="Hi, "+u.name;btn.style.display="none";if(lo)lo.style.display="inline-block";}
+else{chip.style.display="none";btn.style.display="inline-block";if(lo)lo.style.display="none";}
+renderHist();
+}
+function renderHist(){
+var h=getHist();var u=getUser();
+var list=document.getElementById("historyList");var empty=document.getElementById("historyEmpty");
+if(!list)return;
+if(!u){empty.textContent="Abhi login nahi hua hai. Login karo, phir demo me koi ride Accept ya Reject karo, wo yahan save ho jayegi.";list.innerHTML="";return;}
+if(!h.length){empty.textContent="Abhi koi history nahi hai. Demo me koi ride Accept ya Reject karo, ya Kamayi save karo.";list.innerHTML="";return;}
+empty.textContent="";
+list.innerHTML=h.slice().reverse().map(function(x){
+return "<li><div><b>"+x.title+"</b><br><span>"+x.detail+"</span></div><span class=\"tag "+(x.kind==="accept"?"ok":"no")+"\">"+(x.kind==="accept"?"ACCEPT":x.kind==="reject"?"REJECT":"SAVED")+"</span></li>";
+}).join("");
+}
+function openLogin(){document.getElementById("loginModal").classList.add("open")}
+function closeLogin(){document.getElementById("loginModal").classList.remove("open")}
+function doLogin(){
+var name=document.getElementById("loginName").value.trim();
+var phone=document.getElementById("loginPhone").value.trim();
+if(!name){alert("Apna naam dalo");return;}
+if(phone && phone.replace(/\D/g,"").length!==10){alert("Sahi 10 digit mobile number dalo");return;}
+var u={name:name,phone:phone,app:document.getElementById("loginApp").value,city:document.getElementById("loginCity").value.trim()||"Delhi",since:new Date().toISOString().slice(0,10)};
+localStorage.setItem("ds_user",JSON.stringify(u));
+closeLogin();renderUser();
+document.getElementById("historyEmpty").textContent="Login ho gaya, "+name+". Ab demo me ride Accept ya Reject karo, history yahan save hogi.";
+}
+function logout(){localStorage.removeItem("ds_user");renderUser();}
+function addHist(title,detail,kind){
+var u=getUser();if(!u){alert("Pehle Login karo, tabhi history save hogi.");openLogin();return;}
+var h=getHist();h.push({title:title,detail:detail,kind:kind,time:new Date().toLocaleString("en-IN")});
+saveHist(h);renderHist();
+}
+function saveCalc(){
+var u=getUser();if(!u){alert("Pehle Login karo, tabhi kamayi save hogi.");openLogin();return;}
+calc();
+addHist("Kamayi estimate - "+document.getElementById("weekOut").textContent+" / hafta","Din: "+document.getElementById("dayOut").textContent+" - "+document.getElementById("trips").value+" trips, Rs "+document.getElementById("fare").value+" fare","save");
+}
+function clearHistory(){if(confirm("Saari history saaf kar dun?")){saveHist([]);renderHist();}}
 function nextRide(accepted){
+var cur=rides[ri];
+if(getUser()){
+addHist(cur.app+" - "+cur.from+" to "+cur.to,cur.match+"% match - Pickup "+cur.pickup+" min + Ride "+cur.ride+" min - "+new Date().toLocaleString("en-IN"),accepted?"accept":"reject");
+}
 ri=(ri+1)%rides.length;
 var r=rides[ri];
 document.querySelector(".phone h3").textContent=r.app+" - "+r.from+" to "+r.to;
 document.querySelector(".phone .meta").textContent="Pickup "+r.pickup+" min door - Drop tumhare destination ki taraf";
 document.getElementById("matchNum").textContent=r.match;
 document.getElementById("matchBar").style.width=r.match+"%";
-document.querySelector(".phone p:nth-of-type(2)") ;
-document.getElementById("demoMsg").textContent=accepted?"Pehli ride accept ho gayi. Agli sample ride ye hai.":"Pehli ride reject ho gayi. Agli sample ride ye hai.";
+document.getElementById("demoMsg").textContent=accepted?"Ride accept ho gayi, history me save ho gayi. Agli sample ride ye hai.":"Ride reject ho gayi, history me save ho gayi. Agli sample ride ye hai.";
 }
 function calc(){
 var t=+document.getElementById("trips").value;
@@ -221,6 +318,7 @@ document.getElementById("weekOut").textContent="Rs "+(t*f*d).toLocaleString("en-
 }
 ["trips","fare","days"].forEach(function(id){document.getElementById(id).addEventListener("input",calc);});
 calc();
+renderUser();
 var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add("on");io.unobserve(e.target);}});},{threshold:.15});
 document.querySelectorAll(".reveal").forEach(function(el){io.observe(el);});
 </script>
