@@ -133,7 +133,7 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--muted);font-s
 <div class="card reveal"><div class="icon">🎙️</div><h3>Voice me bhi suno</h3><p>Phone dekhna mushkil ho to popup ko bol kar suno. Hindi aur English, dono me.</p></div>
 <div class="card reveal"><div class="icon">💰</div><h3>Kamayi, saaf saaf</h3><p>Din ki trips aur fare dalo, hafte ki estimate nikalo. Apna hisab khud rakho.</p></div>
 <div class="card reveal"><div class="icon">🗺️</div><h3>Offline bhi kaam kare</h3><p>Route aur destination phone me save rahte hain. Network slow ho to bhi popup rukta nahi.</p></div>
-<div class="card reveal"><div class="icon">🛡️</div><h3>Tumhara data, tumhare phone me</h3><p>Ride history aur destination sirf tumhare phone par. Kahi upload nahi hota.</p></div>
+<div class="card reveal"><div class="icon">🛡️</div><h3>Tumhara data, sirf tumhara</h3><p>Google login par history cloud me save hoti hai aur sirf tum dekh sakte ho. Bina Google ke, data sirf tumhare phone me rehta hai.</p></div>
 </div>
 </section>
 
@@ -158,7 +158,7 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--muted);font-s
 
 <section id="history">
 <h2 class="reveal">Meri History</h2>
-<p class="sub reveal">Login karne ke baad tumhari accepted aur rejected rides yahan save rehti hain, aur calculator ki kamayi bhi. Abhi history isi phone ya browser me save hoti hai. Google login on hote hi ye har phone par dikhegi.</p>
+<p class="sub reveal">Login karne ke baad tumhari accepted aur rejected rides yahan save rehti hain, aur calculator ki kamayi bhi. Google se login karo to history cloud me save hoti hai aur har phone par dikhegi. Bina Google ke login par history sirf isi phone me rehti hai.</p>
 <div id="historyBox" class="reveal">
 <p id="historyEmpty" style="color:var(--muted)">Abhi login nahi hua hai. Login karo, phir demo me koi ride Accept ya Reject karo, wo yahan save ho jayegi.</p>
 <ul class="hist" id="historyList"></ul>
@@ -220,7 +220,11 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--muted);font-s
 <div class="modal" id="loginModal">
 <div class="modal-box">
 <h3>Driver Login</h3>
-<p>Apna naam aur driver app dalo. Ye profile isi device me save hoti hai, aur tumhari ride history isi profile se judti hai.</p>
+<p>Google se login karo to tumhari ride history cloud me save hoti hai aur har phone par dikhegi.</p>
+<button class="btn" type="button" onclick="googleLogin()" style="width:100%">Google se Login karo</button>
+<p style="text-align:center;margin:12px 0 0;font-size:13px">Har driver apne khud ke Google account se login karega.</p>
+<hr style="border:0;border-top:1px solid var(--line);margin:18px 0 4px">
+<p>Ya sirf is phone par login karo (history sirf isi phone me rahegi):</p>
 <label>Naam</label>
 <input id="loginName" type="text" placeholder="Jaise: Arun Kumar">
 <label>Mobile number</label>
@@ -249,16 +253,21 @@ var ri=0;
 function getUser(){try{return JSON.parse(localStorage.getItem("ds_user")||"null")}catch(e){return null}}
 function getHist(){try{return JSON.parse(localStorage.getItem("ds_history")||"[]")}catch(e){return []}}
 function saveHist(h){localStorage.setItem("ds_history",JSON.stringify(h))}
+function googleUser(){return window.DS&&window.DS.user?window.DS.user:null}
+function googleLogin(){if(window.DS&&window.DS.signIn){window.DS.signIn();}else{alert("Google login abhi load ho raha hai, 2 second ruk kar dobara dabao.");}}
 function renderUser(){
+var gu=googleUser();
 var u=getUser();
 var chip=document.getElementById("userChip");
 var btn=document.getElementById("loginBtn");
 var lo=document.getElementById("logoutBtn");
-if(u){chip.style.display="inline-flex";chip.textContent="Hi, "+u.name;btn.style.display="none";if(lo)lo.style.display="inline-block";}
+if(gu){chip.style.display="inline-flex";chip.textContent="Hi, "+(gu.displayName||gu.email);btn.style.display="none";if(lo)lo.style.display="inline-block";}
+else if(u){chip.style.display="inline-flex";chip.textContent="Hi, "+u.name;btn.style.display="none";if(lo)lo.style.display="inline-block";}
 else{chip.style.display="none";btn.style.display="inline-block";if(lo)lo.style.display="none";}
 renderHist();
 }
 function renderHist(){
+if(googleUser()){return;}
 var h=getHist();var u=getUser();
 var list=document.getElementById("historyList");var empty=document.getElementById("historyEmpty");
 if(!list)return;
@@ -281,8 +290,9 @@ localStorage.setItem("ds_user",JSON.stringify(u));
 closeLogin();renderUser();
 document.getElementById("historyEmpty").textContent="Login ho gaya, "+name+". Ab demo me ride Accept ya Reject karo, history yahan save hogi.";
 }
-function logout(){localStorage.removeItem("ds_user");renderUser();}
+function logout(){if(googleUser()){window.DS.signOut();return;}localStorage.removeItem("ds_user");renderUser();}
 function addHist(title,detail,kind){
+if(googleUser()){window.DS.addCloud(title,detail,kind);return;}
 var u=getUser();if(!u){alert("Pehle Login karo, tabhi history save hogi.");openLogin();return;}
 var h=getHist();h.push({title:title,detail:detail,kind:kind,time:new Date().toLocaleString("en-IN")});
 saveHist(h);renderHist();
@@ -321,6 +331,34 @@ calc();
 renderUser();
 var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add("on");io.unobserve(e.target);}});},{threshold:.15});
 document.querySelectorAll(".reveal").forEach(function(el){io.observe(el);});
+</script>
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+import {getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut} from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+import {getFirestore, collection, addDoc, getDocs, query, orderBy, limit} from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+var firebaseConfig={apiKey:"AIzaSyA6sxadwzS21VmqJBp3qLfQel1AKlcED8c",authDomain:"driver-saathi-241e6.firebaseapp.com",projectId:"driver-saathi-241e6",storageBucket:"driver-saathi-241e6.firebasestorage.app",messagingSenderId:"103289109240",appId:"1:103289109240:web:5419b27305d8e79d04d90d"};
+var auth=null,db=null,user=null;
+function renderCloud(items){
+var list=document.getElementById("historyList");var empty=document.getElementById("historyEmpty");
+if(!list)return;
+if(!items.length){empty.textContent="Google login ho gaya. Ab demo me ride Accept ya Reject karo, history yahan aur har phone par save hogi.";list.innerHTML="";return;}
+empty.textContent="";
+list.innerHTML=items.map(function(x){
+return "<li><div><b>"+x.title+"</b><br><span>"+x.detail+"</span></div><span class=\"tag "+(x.kind==="accept"?"ok":"no")+"\">"+(x.kind==="accept"?"ACCEPT":x.kind==="reject"?"REJECT":"SAVED")+"</span></li>";
+}).join("");
+}
+try{
+var app=initializeApp(firebaseConfig);
+auth=getAuth(app);db=getFirestore(app);
+window.DS={user:null,
+signIn:function(){var p=new GoogleAuthProvider();signInWithPopup(auth,p).catch(function(e){if(e.code==="auth/popup-blocked"||e.code==="auth/popup-closed-by-user"){signInWithRedirect(auth,p);}else{alert("Google login nahi hua: "+(e.message||e.code));}});},
+signOut:function(){signOut(auth);},
+addCloud:function(title,detail,kind){if(!user)return;addDoc(collection(db,"users",user.uid,"history"),{title:title,detail:detail,kind:kind,ts:Date.now(),time:new Date().toLocaleString("en-IN")}).then(function(){window.DS.loadCloud();}).catch(function(e){alert("History cloud me save nahi hui: "+(e.message||e.code));});},
+loadCloud:function(){if(!user)return;var q=query(collection(db,"users",user.uid,"history"),orderBy("ts","desc"),limit(50));getDocs(q).then(function(s){var items=[];s.forEach(function(d){items.push(d.data());});renderCloud(items);}).catch(function(e){var empty=document.getElementById("historyEmpty");if(empty)empty.textContent="History load nahi hui: "+(e.message||e.code);});}
+};
+getRedirectResult(auth).catch(function(){});
+onAuthStateChanged(auth,function(u){user=u;window.DS.user=u;if(u){closeLogin();renderUser();window.DS.loadCloud();}else{renderUser();}});
+}catch(e){console.log("Firebase load fail",e);}
 </script>
 </body>
 </html>
