@@ -298,14 +298,15 @@ var h=getHist();h.push({title:title,detail:detail,kind:kind,time:new Date().toLo
 saveHist(h);renderHist();
 }
 function saveCalc(){
-var u=getUser();if(!u){alert("Pehle Login karo, tabhi kamayi save hogi.");openLogin();return;}
+var u=getUser()||googleUser();if(!u){alert("Pehle Login karo, tabhi kamayi save hogi.");openLogin();return;}
 calc();
 addHist("Kamayi estimate - "+document.getElementById("weekOut").textContent+" / hafta","Din: "+document.getElementById("dayOut").textContent+" - "+document.getElementById("trips").value+" trips, Rs "+document.getElementById("fare").value+" fare","save");
 }
 function clearHistory(){if(confirm("Saari history saaf kar dun?")){saveHist([]);renderHist();}}
 function nextRide(accepted){
 var cur=rides[ri];
-if(getUser()){
+var loggedIn=getUser()||googleUser();
+if(loggedIn){
 addHist(cur.app+" - "+cur.from+" to "+cur.to,cur.match+"% match - Pickup "+cur.pickup+" min + Ride "+cur.ride+" min - "+new Date().toLocaleString("en-IN"),accepted?"accept":"reject");
 }
 ri=(ri+1)%rides.length;
@@ -314,7 +315,8 @@ document.querySelector(".phone h3").textContent=r.app+" - "+r.from+" to "+r.to;
 document.querySelector(".phone .meta").textContent="Pickup "+r.pickup+" min door - Drop tumhare destination ki taraf";
 document.getElementById("matchNum").textContent=r.match;
 document.getElementById("matchBar").style.width=r.match+"%";
-document.getElementById("demoMsg").textContent=accepted?"Ride accept ho gayi, history me save ho gayi. Agli sample ride ye hai.":"Ride reject ho gayi, history me save ho gayi. Agli sample ride ye hai.";
+if(loggedIn){document.getElementById("demoMsg").textContent=accepted?"Ride accept ho gayi, history me save ho gayi. Agli sample ride ye hai.":"Ride reject ho gayi, history me save ho gayi. Agli sample ride ye hai.";}
+else{document.getElementById("demoMsg").textContent=accepted?"Ride accept ho gayi. History save karne ke liye pehle Login karo.":"Ride reject ho gayi. History save karne ke liye pehle Login karo.";}
 }
 function calc(){
 var t=+document.getElementById("trips").value;
